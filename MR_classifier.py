@@ -10,6 +10,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
+
 def feature_check(label):
     """Check the label for a list of features.
 
@@ -105,6 +106,87 @@ def _compile_regex(string):
     else:
         regex = re.compile(r"(\b%s\b)|(_%s_)|(_%s)|(%s_)" % (string,string,string,string), re.IGNORECASE)
     return regex
+
+def is_contrast(label):
+
+    """
+    Checking if a label contains characteristics that could be classified as Contrast.
+    
+    """
+
+    regexes = [
+        re.compile('[+-]C', re.IGNORECASE),
+        re.compile('C[+-]', re.IGNORECASE),
+        re.compile('[+]G', re.IGNORECASE),
+        re.compile('G[+]', re.IGNORECASE),
+        re.compile('[+] C', re.IGNORECASE),
+        re.compile('G [+]', re.IGNORECASE),
+        re.compile('GAD', re.IGNORECASE),
+        re.compile('GD', re.IGNORECASE),
+        re.compile('POST', re.IGNORECASE),
+        re.compile('GD', re.IGNORECASE),
+        re.compile('POSTBCOR', re.IGNORECASE),
+        re.compile('POSTBAX', re.IGNORECASE),
+        re.compile('\d{0,2}ML', re.IGNORECASE),
+        re.compile('\d{0,2}CC', re.IGNORECASE),
+        re.compile('CONTRAST', re.IGNORECASE),
+        re.compile('ENHANCE', re.IGNORECASE),
+        re.compile('DOTAREM', re.IGNORECASE),
+        re.compile('DOTA', re.IGNORECASE),
+        re.compile('GADA', re.IGNORECASE),
+        re.compile('WGAD', re.IGNORECASE),
+        re.compile('GADO', re.IGNORECASE),
+        re.compile('CONTR', re.IGNORECASE),
+        re.compile('GADAVIST', re.IGNORECASE),
+        re.compile('POST#', re.IGNORECASE),
+        re.compile('FSPOST', re.IGNORECASE),
+        re.compile('POSTGAD', re.IGNORECASE),
+        re.compile('FATSATPOST', re.IGNORECASE),
+        re.compile('C10ML', re.IGNORECASE),
+        re.compile('MAGNEVIST', re.IGNORECASE),
+        re.compile('POSTC', re.IGNORECASE),
+        re.compile('POSTFC', re.IGNORECASE),
+        re.compile('LATE', re.IGNORECASE),
+        re.compile('DOT', re.IGNORECASE),
+        re.compile('CONTRA', re.IGNORECASE),
+        re.compile('10MIN', re.IGNORECASE),
+        re.compile('00MM', re.IGNORECASE),
+        re.compile('POS', re.IGNORECASE),
+        re.compile('INFUSION', re.IGNORECASE),
+        re.compile('GA', re.IGNORECASE),
+        re.compile('CONTRA', re.IGNORECASE),
+        re.compile('INJECTING', re.IGNORECASE),
+        re.compile('MINUTES', re.IGNORECASE),
+        re.compile('MINUTE', re.IGNORECASE),
+        re.compile('ENHANC', re.IGNORECASE),
+        re.compile('AFTER', re.IGNORECASE),
+        re.compile('INJ', re.IGNORECASE),
+        re.compile('INJECTION', re.IGNORECASE),
+        re.compile('POSTAXIAL', re.IGNORECASE),
+        re.compile('MAG', re.IGNORECASE),
+        re.compile('SPINEPOST', re.IGNORECASE),
+        re.compile('POST14', re.IGNORECASE),
+        re.compile('POSTG', re.IGNORECASE),
+        re.compile('INJECT', re.IGNORECASE)       
+        ]
+    return common_utils.regex_search_label(regexes, label)
+
+
+def is_not_contrast(label):
+
+    """
+    Checking if a label contains characteristics that can classify it to be No Contrast.
+
+    """
+
+    regexes = [
+
+        re.compile('(no.?contrast)', re.IGNORECASE),
+        re.compile('(pre)', re.IGNORECASE)
+
+        ]
+
+    return  common_utils.regex_search_label(regexes, label)
 
 
 # Anatomy, T1
@@ -411,8 +493,25 @@ def infer_classification(label):
             [class_intent.append(x) for x in intents if x not in class_intent]
             classification['Intent'] = class_intent
 
-    return classification
+        
+        # Code for Contrast/ No-Contrast Classification ( New Feature added on May 13 2021)
 
+        # Any label that satisfies the Contrast or No Contrast condition it would be tagged as Contrast/No Contrast
+        # If a label satisfies both Contrast and No Contrast condition, Contrast would be negated and tagged as No Contrast
+        # If a label doesn't satisfy both the conditions, the Classification would be left empty
+     
+
+        if is_contrast(label):
+
+            classification['Contrast'] = ['Contrast']
+
+
+        if is_not_contrast(label):
+
+            classification['Contrast'] = ['No Contrast']
+
+
+    return classification
 
 
 def get_param_classification(dcm, slice_number, unique_iop):
@@ -643,6 +742,8 @@ def classify_MR(df, dcm, dcm_metadata, acquisition):
     # Determine how many DICOM files are in directory
     slice_number = len(df)
 
+
+
     # Determine whether ImageOrientationPatient is unique for each image represented in the df
     if hasattr(df, 'ImageOrientationPatient') and len(df) > 1:
         uniqueiop = iop_is_unique(df.ImageOrientationPatient)
@@ -650,13 +751,13 @@ def classify_MR(df, dcm, dcm_metadata, acquisition):
         uniqueiop = False
     # Classification (# Only set classification if the modality is MR)
     if dcm_metadata['modality'] == 'MR':
+
+
         log.info("Determining MR Classification...")
         classification = classify_dicom(dcm, slice_number, acquisition.get('label'), unique_iop=uniqueiop)
-        
+
+
         if classification:
             dcm_metadata['classification'] = classification
 
     return dcm_metadata
-
-
-

@@ -818,11 +818,11 @@ def classify_anatomy(classification, acquisition, series_description,
                  "description...")
         anatomy_classification = get_anatomy_from_label(series_description)
 
-    # # Not using the scan coverage based anatomy classification anymore
-    #if not anatomy_classification:
-    #    log.info("Could not classify. Attempting to classify from scan "
-    #             "coverage...")
-    #    anatomy_classification = get_anatomy_from_scan_coverage(scan_coverage)
+    
+    if not anatomy_classification:
+        log.info("Could not classify. Attempting to classify from scan "
+                 "coverage...")
+        anatomy_classification = get_anatomy_from_scan_coverage(scan_coverage)
 
     if anatomy_classification:
         log.info(f"Classified as {anatomy_classification}")

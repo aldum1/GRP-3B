@@ -210,7 +210,7 @@ class ProcessingPTSubClassifier(PTSubClassifier):
         processing_ac = None
 
         ac_method = self.get_dicom_tag('AttenuationCorrectionMethod')
-        if ac_method:
+        if ac_method and 'NONE' not in ac_method:
             processing_ac = 'Attenuation Corrected'
 
         # classify based on 'CorrectedImage' if haven't classified
