@@ -216,7 +216,7 @@ def classify_OPHTHA(dcm_metadata, acquisition):
                 modality = 'FP'
                 modalityType = 'Fluorescein Angiography'
                 subType = 'Wide Field'
-            elif protocolName == 'FA: UltraWidefield':
+            elif protocolName == 'UWF-FA':
                 modality = 'FP'
                 modalityType = 'Fluorescein Angiography'
                 subType = 'Ultra-wide Field' 
@@ -243,6 +243,9 @@ def classify_OPHTHA(dcm_metadata, acquisition):
             elif protocolName == 'SD-OCT':
                 modality = 'OCT'
                 octType = ['Standard']
+            elif protocolName == 'SS-OCT':
+                modality = 'OCT'
+                octType = ['Standard']    
             elif protocolName == 'UWF-AF':
                 modality = 'FP'
                 modalityType = 'Autofluorescence' 
