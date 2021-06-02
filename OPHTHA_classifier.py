@@ -237,15 +237,6 @@ def classify_OPHTHA(dcm_metadata, acquisition):
             elif protocolName == 'ICG':
                 modality = 'FP'
                 modalityType = 'Indocyanine Green'
-            elif protocolName == 'OCT Angiography':
-                modality = 'OCT'
-                octType = ['Angiography']
-            elif protocolName == 'SD-OCT':
-                modality = 'OCT'
-                octType = ['Standard']
-            elif protocolName == 'SS-OCT':
-                modality = 'OCT'
-                octType = ['Standard']    
             elif protocolName == 'UWF-AF':
                 modality = 'FP'
                 modalityType = 'Autofluorescence' 
@@ -258,11 +249,21 @@ def classify_OPHTHA(dcm_metadata, acquisition):
                 modality = 'FP'
                 modalityType = 'Indocyanine Green' 
                 subType = 'Ultra-wide Field'
+            elif protocolName == 'OCT Angiography':
+                modality = 'OCT'
+                octType = ['Angiography']
+            elif protocolName == 'SD-OCT':
+                modality = 'OCT'
+                octType = ['Standard']
+            elif protocolName == 'SS-OCT':
+                modality = 'OCT'
+                octType = ['Standard']        
             elif protocolName == 'Widefield OCT':
                 modality = 'OCT'
-                octType = ['Standard'] 
-                # octSubType = 'Wide Field'
+                octType = ['Standard']
 
+        if modality:  
+            log.debug("Modaliti is set to: " + modality + "using protocolName field" )
         elif device_code_sequence and device_code_sequence == 'A-00FBE':
             modality = 'OCT'
         elif device_code_sequence and study_description and study_description == 'CF':
@@ -270,7 +271,6 @@ def classify_OPHTHA(dcm_metadata, acquisition):
             modalityType = 'Color'
         elif is_OCT(acquisition.label):
             modality = 'OCT'
-            # updateFlag = True
 
         if modality:
             log.debug('In Modality... Got:')
@@ -280,6 +280,8 @@ def classify_OPHTHA(dcm_metadata, acquisition):
                 classifications['Type']=[modalityType]
             if subType:
                 classifications['Sub-Type'] = [subType]
+        else:
+            log.debug('Could not find matching rule to determine Modality')        
   
         # Get Laterality
         laterality = None
